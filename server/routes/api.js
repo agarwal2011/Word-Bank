@@ -3,6 +3,7 @@ const express = require("express");
 // Import API Routes
 const words = require("./api/words");
 const users = require("./api/users");
+
 // Import Express Routes
 const api = express.Router();
 
