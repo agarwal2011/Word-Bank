@@ -19,9 +19,7 @@ const Words = {
     DateCreated: new Date()
   }
 };
-
-// Adding Routes.
-words.get("/", (req, res) => {
+ds.get("/", (req, res) => {
   res.json({
     Error: false,
     Message: Words
