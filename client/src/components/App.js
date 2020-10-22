@@ -8,6 +8,7 @@ import Welcome from "./Screens/Welcome";
 import { Link } from "react-router-dom";
 import { UserLogin, UserRegister } from "../services/User";
 import { CheckEmail } from "../helpers/Validators";
+import { GetWords } from "../services/Words";
 
 const InitialForm = {
   Login: {
@@ -28,7 +29,8 @@ const InitialForm = {
 class App extends Component {
   state = {
     User: null,
-    Form: InitialForm
+    Form: InitialForm,
+    Words: {}
   };
   resetForm = () => {
     this.setState({
@@ -178,6 +180,11 @@ class App extends Component {
     if (typeof Storage !== "undefined") {
       this.setState(JSON.parse(window.localStorage.getItem("state")));
     }
+    GetWords().then(res =>
+      this.setState({
+        Words: res.data.Message
+      })
+    );
   }
   render() {
     const { User } = this.state;
@@ -192,7 +199,11 @@ class App extends Component {
         <ContainerRow fluid={true} className="my-3">
           {User ? (
             <div className="col-12">
-              <Welcome User={this.state.User} onSubmit={this.handleLogout} />
+              <Welcome
+                User={this.state.User}
+                onSubmit={this.handleLogout}
+                Words={this.state.Words}
+              />
             </div>
           ) : (
             <>
