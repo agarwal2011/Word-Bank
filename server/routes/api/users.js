@@ -3,48 +3,23 @@ const express = require("express");
 const { CheckEmail } = require("../../helpers/validators");
 // Import Express Routes
 const users = express.Router();
-
-const Users = {
-  Praveen: {
-    email: "praveen@letsgrad.com",
-    fullname: "Praveen Kumar",
-    password: "Hello@123"
-  },
-  AbhiVikrant: {
-    email: "abhi@letsgrad.com",
-    fullname: "Abhishek Vikrant",
-    password: "1234@123"
-  },
-  Santosh: {
-    email: "santosh@letsgrad.com",
-    fullname: "Santosh",
-    password: "12345"
-  },
-  Ruchita: {
-    email: "ruchita@letsgrad.com",
-    fullname: "Ruchita",
-    password: "Carol@123"
-  },
-  Princy: {
-    email: "princy@letsgrad.com",
-    fullname: "Princy Agarwal",
-    password: "passw"
-  },
-  Nagaraj: {
-    email: "nagaraj@letsgrad.com",
-    fullname: "Nagaraj",
-    password: "nagsvk123"
-  },
-  angle: {
-    email: "angle@letsgrad.com",
-    fullname: "Obtuse Angle",
-    password: "hello@12"
-  }
-};
+const Users = require("../../constants/users");
 
 // Adding Routes.
 users.get("/", (req, res) => {
-  res.status(403).json("You can't see the users! Nananana!");
+  if (!req.session.User) {
+    res.status(403).json({
+      Error: true,
+      ErrorMessage: "User not signed in."
+    });
+  } else {
+    const Message = { ...req.session.User };
+    delete Message.password;
+    res.json({
+      Error: false,
+      Message
+    });
+  }
 });
 users.post("/login", (req, res) => {
   const { username, password } = req.body;
@@ -75,6 +50,10 @@ users.post("/login", (req, res) => {
       ErrorMessage: "You should give both username and password!"
     });
   }
+});
+users.post("/logout", (req, res) => {
+  req.session.destroy();
+  res.status(204).end();
 });
 users.post("/", (req, res) => {
   const { username, password, fullname, email } = req.body;

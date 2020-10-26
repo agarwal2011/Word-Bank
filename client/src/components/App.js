@@ -6,7 +6,12 @@ import Login from "./Screens/Login";
 import Register from "./Screens/Register";
 import Welcome from "./Screens/Welcome";
 import { Link } from "react-router-dom";
-import { UserLogin, UserRegister } from "../services/User";
+import {
+  CheckUser,
+  UserLogin,
+  UserLogout,
+  UserRegister
+} from "../services/User";
 import { CheckEmail } from "../helpers/Validators";
 import { GetWords } from "../services/Words";
 
@@ -165,27 +170,50 @@ class App extends Component {
       }
     }
   };
-  handleLogout = e => {
-    e.preventDefault();
-    this.setState(
-      {
-        User: null,
-        Form: InitialForm
-      },
-      this.saveState
-    );
+  handleLogout = () => {
+    UserLogout().then(() => {
+      this.setState(
+        {
+          User: null,
+          Form: InitialForm
+        },
+        this.saveState
+      );
+    });
   };
   componentDidMount() {
-    // Check if local storage is supported.
-    if (typeof Storage !== "undefined") {
-      this.setState(JSON.parse(window.localStorage.getItem("state")));
-    }
+    CheckUser()
+      .then(res => {
+        // Check if local storage is supported.
+        if (typeof Storage !== "undefined") {
+          const State = JSON.parse(window.localStorage.getItem("state"));
+          if (!State || !State.User) {
+            this.setState({
+              User: res.data.Message
+            });
+          } else {
+            this.setState(State);
+          }
+        }
+      })
+      .catch(() => {
+        if (typeof Storage !== "undefined") {
+          window.localStorage.removeItem("state");
+        }
+      });
     GetWords().then(res =>
       this.setState({
         Words: res.data.Message
       })
     );
   }
+  UpdateWords = () => {
+    GetWords().then(res =>
+      this.setState({
+        Words: res.data.Message
+      })
+    );
+  };
   render() {
     const { User } = this.state;
     return (
@@ -201,8 +229,9 @@ class App extends Component {
             <div className="col-12">
               <Welcome
                 User={this.state.User}
-                onSubmit={this.handleLogout}
+                handleLogout={this.handleLogout}
                 Words={this.state.Words}
+                UpdateWords={this.UpdateWords}
               />
             </div>
           ) : (

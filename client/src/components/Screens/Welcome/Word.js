@@ -1,36 +1,66 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import moment from "moment";
-import { useState } from "react";
 import { DeleteWord } from "../../../services/Words";
 
-const Word = ({ match, Words }) => {
+const Word = ({ match, Words, User, UpdateWords }) => {
   const [DeleteMode, setDeleteMode] = useState(false);
+  const [Deleted, setDeleted] = useState(false);
   const WordID = match.params.wordId;
   const Word = Words[WordID];
+  useEffect(() => {
+    if (Deleted) {
+      UpdateWords();
+    }
+    setDeleteMode(false);
+    setDeleted(false);
+  }, [WordID]);
   const handleDelete = e => {
     e.preventDefault();
     setDeleteMode(!DeleteMode);
   };
   const handleReallyDelete = e => {
     e.preventDefault();
-    DeleteWord(WordID).then(res => {
-      // Tell the user, the word has been deleted.
-      // Take back to the home page.
-      // Update the list of words.
+    DeleteWord(WordID).then(() => {
+      setDeleted(true);
     });
+  };
+  const handleGoHome = () => {
+    UpdateWords();
   };
   if (Word)
     return (
       <section className="Word">
         <h3>
           Word: <strong>{WordID}</strong>
-          <span className="btn-group float-right">
-            <button className="btn btn-sm btn-danger" onClick={handleDelete}>
-              {DeleteMode ? "Cancel" : "Delete"}
-            </button>
-          </span>
+          {Word.User === User.username && (
+            <span className="btn-group float-right">
+              <Link
+                to={`/word/${WordID}/edit`}
+                className="btn btn-sm btn-primary"
+              >
+                Edit
+              </Link>
+              <button className="btn btn-sm btn-danger" onClick={handleDelete}>
+                {DeleteMode ? "Cancel" : "Delete"}
+              </button>
+            </span>
+          )}
         </h3>
-        {DeleteMode ? (
+        {Deleted ? (
+          <div className="alert alert-success text-center">
+            <p>
+              The word <strong>{Word.Word}</strong> has been deleted.
+            </p>
+            <Link
+              to="/"
+              className="btn btn-success mr-3"
+              onClick={handleGoHome}
+            >
+              Back to Home
+            </Link>
+          </div>
+        ) : DeleteMode && Word.User === User.username ? (
           <div className="alert alert-danger text-center">
             <p>
               Are you sure, you want to delete the word{" "}
